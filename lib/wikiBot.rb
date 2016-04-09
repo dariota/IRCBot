@@ -1,33 +1,20 @@
-require "addressable/uri"
 require "socket"
+require "~/ruby/shout-bot/lib/mediaFetch"
 
-class ShoutBot
-  def self.shout(uri, password = nil, &block)
-    raise ArgumentError unless block_given?
-
-    uri = Addressable::URI.parse(uri)
-    irc = new(uri.host, uri.port, uri.user, uri.password) do |irc|
-      if channel = uri.fragment
-        irc.join(channel, password, &block)
-      else
-        irc.channel = uri.path[1..-1]
-        yield irc
-      end
-    end
-  end
-
+class WikiBot
   attr_accessor :channel
 
-  def initialize(server, port, nick, password=nil)
-    raise ArgumentError unless block_given?
-
+  def initialize(server, port, nick, password = nil)
     @socket = TCPSocket.open(server, port || 6667)
     @socket.puts "PASSWORD #{password}" if password
     @socket.puts "NICK #{nick}"
     @socket.puts "USER #{nick} #{nick} #{nick} :#{nick}"
     sleep 1
-    yield self
-    @socket.puts "QUIT"
+    self
+  end
+
+  def quit(reason = nil)
+    @socket.puts "QUIT :#{reason or ''}"
     @socket.gets until @socket.eof?
   end
 
@@ -38,11 +25,17 @@ class ShoutBot
     @channel_password = params[1] || password || ""
     @socket.puts "JOIN #{@channel} #{@channel_password}"
     yield self
-    @socket.puts "PART #{@channel}"
   end
 
   def say(message)
     return unless @channel
     @socket.puts "PRIVMSG #{@channel} :#{message}"
   end
+
 end
+
+bot = WikiBot.new("irc.netsoc.tcd.ie", 6667, "dariobot")
+bot.join("dariotest") do |bot|
+	bot.say "hello"
+end
+bot.quit

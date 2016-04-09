@@ -33,5 +33,3 @@ def fetch uri_str, limit = 10
 		response.value
 	end
 end
-
-puts search ARGV[0]
