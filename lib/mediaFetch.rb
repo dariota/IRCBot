@@ -1,11 +1,11 @@
 require 'net/http'
 require 'cgi'
 
-def search term
+def search(term)
 	fetch_result CGI.escape term
 end
 
-def fetch_result page
+def fetch_result(page)
 	uri = URI.parse "https://wiki.netsoc.tcd.ie/index.php?search=#{page}&button=&title=Special%3ASearch"
 	response = fetch uri
 
@@ -13,12 +13,12 @@ def fetch_result page
 	title.nil? ? "None found." : "\C-b#{title}\C-o - #{response.uri}"
 end
 
-def get_title response
+def get_title(response)
 	match = /<title>(.*?) - Netsoc Wiki<\/title>/.match response.body
 	match.nil? ? nil : match[1]
 end
 
-def fetch uri_str, limit = 10
+def fetch(uri_str, limit = 10)
 	return nil if limit == 0
 
 	response = Net::HTTP.get_response URI uri_str
