@@ -33,7 +33,7 @@ class WikiBot
 			channel = @channels.first
 		end
 		join channel unless @channels.member? channel
-		@socket.puts "PRIVMSG #{@channel} :#{message}"
+		@socket.puts "PRIVMSG ##{channel} :#{message}"
 	end
 
 	def get_messages()
@@ -42,19 +42,21 @@ class WikiBot
 
 	def process_message(message)
 		puts message
-		case
-		when message.start_with? ".quit"
-
-		when message.start_with? ".remember"
-
-		when message.start_with? ".quote"
-
-		when message.include? /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
+		a = (message.split " ")[0]
+		case a
+		when ".quit"
+			puts "quit"
+		when ".remember"
+			puts "remem"
+		when ".quote"
+			puts "quote"
+		when /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
+			puts "wiki"
 		end
 	end
 
 end
 
 bot = WikiBot.new("irc.netsoc.tcd.ie", 6667, "dariobot")
-bot.say "Hey bud", "#dariotest"
+bot.say "Hey bud", "dariotest"
 bot.get_messages
