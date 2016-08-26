@@ -43,6 +43,11 @@ class WikiBot
 	def process_message(message)
 		puts message
 		a = (message.split " ")[0]
+
+		if a == "PING"
+			return ping message
+		end
+
 		case a
 		when ".quit"
 			puts "quit"
@@ -53,6 +58,12 @@ class WikiBot
 		when /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
 			puts "wiki"
 		end
+	end
+
+	def ping(message)
+		puts "got ping"
+		server = (message.split " ")
+		@socket.puts "PONG #{server}"
 	end
 
 end
