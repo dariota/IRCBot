@@ -11,6 +11,7 @@ class WikiBot
 		@socket.puts "NICK #{nick}"
 		@socket.puts "USER #{nick} #{nick} #{nick} :#{nick}"
 		@channels = Set.new
+		@hosts_idents = Hash.new
 		sleep 1
 		self
 	end
@@ -30,10 +31,10 @@ class WikiBot
 	def say(message, channel = nil)
 		if channel.nil?
 			raise ArgumentError unless @channels.length == 1
-			channel = @channels.first
+			channel = "##{@channels.first}"
 		end
 		join channel unless @channels.member? channel
-		@socket.puts "PRIVMSG ##{channel} :#{message}"
+		@socket.puts "PRIVMSG #{channel} :#{message}"
 	end
 
 	def get_messages()
@@ -42,15 +43,29 @@ class WikiBot
 
 	def process_message(message)
 		puts message
-		a = (message.split " ")[0]
+		messageParts = message.split " "
 
-		if a == "PING"
+		if messageParts[0] == "PING"
 			return ping message
 		end
 
-		case a
+		senderData = message.match /^(.+?)!(.+?)@(.+?) (.+?) (.+?) :(.*)/
+
+		return if senderData.nil?
+
+		user = senderData[1]
+		ident = senderData[2]
+		host = senderData[3]
+		type = senderData[4]
+		channel = senderData[5]
+		message = senderData[6]
+		return if type != "PRIVMSG"
+
+		puts message.split(" ")[0]
+
+		case message.split(" ")[0]
 		when ".quit"
-			puts "quit"
+			quit "Received quit command from #{user}." if admin_authenticated(ident, host)
 		when ".remember"
 			puts "remem"
 		when ".quote"
@@ -66,8 +81,29 @@ class WikiBot
 		@socket.puts "PONG #{server}"
 	end
 
+	def admin_authenticated(ident, host)
+		host.downcase!
+		ident.downcase!
+		idents = @hosts_idents[host]
+		!idents.nil? && idents.member?(ident)
+	end
+
+	def add_admin(ident, host)
+		ident.downcase!
+		host.downcase!
+
+		idents = @hosts_idents[host]
+		if idents.nil?
+			idents = Set.new
+			@hosts_idents[host] = idents
+		end
+
+		idents.add ident
+	end
+
 end
 
 bot = WikiBot.new("irc.netsoc.tcd.ie", 6667, "dariobot")
-bot.say "Hey bud", "dariotest"
+bot.say "Hey bud", "#dariotest"
+bot.add_admin("dario", "spoon.netsoc.tcd.ie")
 bot.get_messages
