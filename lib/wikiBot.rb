@@ -22,7 +22,7 @@ class WikiBot
 	end
 
 	def join(chanName, password = nil)
-		channel = "##{chanName}"
+		channel = "#{chanName}"
 		@channel_password = password || ""
 		@socket.puts "JOIN #{channel} #{@channel_password}"
 		@channels.add chanName
@@ -31,7 +31,7 @@ class WikiBot
 	def say(message, channel = nil)
 		if channel.nil?
 			raise ArgumentError unless @channels.length == 1
-			channel = "##{@channels.first}"
+			channel = "#{@channels.first}"
 		end
 		join channel unless @channels.member? channel
 		@socket.puts "PRIVMSG #{channel} :#{message}"
@@ -49,7 +49,7 @@ class WikiBot
 			return ping message
 		end
 
-		senderData = message.match /^(.+?)!(.+?)@(.+?) (.+?) (.+?) :(.*)/
+		senderData = message.match /^:(.+?)!(.+?)@(.+?) (.+?) (.+?) :(.*)/
 
 		return if senderData.nil?
 
