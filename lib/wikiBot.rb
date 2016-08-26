@@ -1,6 +1,6 @@
 require "socket"
 require "set"
-require "~/ruby/shout-bot/lib/mediaFetch"
+require "./mediaFetch"
 
 class WikiBot
 	attr_accessor :channel
@@ -36,8 +36,25 @@ class WikiBot
 		@socket.puts "PRIVMSG #{@channel} :#{message}"
 	end
 
+	def get_messages()
+		process_message @socket.gets until @socket.eof?
+	end
+
+	def process_message(message)
+		puts message
+		case
+		when message.start_with? ".quit"
+
+		when message.start_with? ".remember"
+
+		when message.start_with? ".quote"
+
+		when message.include? /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
+		end
+	end
+
 end
 
 bot = WikiBot.new("irc.netsoc.tcd.ie", 6667, "dariobot")
 bot.say "Hey bud", "#dariotest"
-bot.quit
+bot.get_messages
