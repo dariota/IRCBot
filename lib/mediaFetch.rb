@@ -15,7 +15,18 @@ end
 
 def get_title(response)
 	match = /<title>(.*?) - Netsoc Wiki<\/title>/.match response.body
-	match.nil? ? nil : match[1]
+	unless match.nil? || (match[1].include? "Search results")
+		puts match
+		match[1]
+	else
+		searchMatch = response.body.match /'.*title="(.+?)"/
+		unless searchMatch.nil?
+			puts "Searching for #{searchMatch[1]}"
+			fetch_result(searchMatch[1])
+		else
+			nil
+		end
+	end
 end
 
 def fetch(uri_str, limit = 10)
