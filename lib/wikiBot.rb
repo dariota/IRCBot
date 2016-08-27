@@ -70,13 +70,26 @@ class WikiBot
 		case messageParts[0]
 		when ".quit"
 			quit "Received quit command from #{nick}." if admin_authenticated(ident, host)
+		when ".join"
+			return unless admin_authenticated(ident, host)
+			joinChannel = messageParts[1]
+			join joinChannel
+			say "Joined on request of #{nick}.", joinChannel
 		when ".nick"
 			return unless admin_authenticated(ident, host)
 			nick(messageParts[1])
 		when ".remember"
-			puts "remem"
+			return
 		when ".quote"
-			puts "quote"
+			return
+		when ".wiki"
+			index = message.index(" ")
+			unless index.nil?
+				link = search message[index+1..-1]
+				say link, channel
+			else
+				say "#{nick}: Please provide a search term.", channel
+			end
 		when /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
 			puts "wiki"
 		end
