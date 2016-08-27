@@ -81,7 +81,17 @@ class WikiBot
 			return unless admin_authenticated(ident, host)
 			nick(messageParts[1])
 		when ".remember"
-			puts @logger.find(channel, messageParts[1], messageParts[2..-1].join(" ")) unless messageParts.length < 3
+			if messageParts.length < 3
+				say ".remember <nick> <substring>", channel
+				return
+			end
+			if messageParts[1].casecmp(nick) == 0
+				say "You're really not that interesting, #{nick}.", channel
+				return
+			end
+			
+			remembered = @logger.find(channel, messageParts[1], messageParts[2..-1].join(" ")) unless messageParts.length < 3
+			puts "#{remembered.nick}: #{remembered.message}" unless remembered.nil?
 		when ".quote"
 			return
 		when ".wiki"
