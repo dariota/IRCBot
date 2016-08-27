@@ -23,5 +23,15 @@ class RingBuffer < Array
 		nil
 	end
 
+	def find
+		for i in @next.downto(0)
+			return self[i] if yield self[i]
+		end
+		for i in (self.size - 1).downto(@next + 1)
+			return self[i] if yield self[i]
+		end
+		nil
+	end
+
 	alias :push :<<
 end
