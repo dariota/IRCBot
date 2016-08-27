@@ -1,32 +1,22 @@
 require 'net/http'
 require 'cgi'
+require 'json'
+
+BASE_WIKI_URL = "https://wiki.netsoc.tcd.ie/"
 
 def search(term)
-	fetch_result CGI.escape term
-end
-
-def fetch_result(page)
-	uri = URI.parse "https://wiki.netsoc.tcd.ie/index.php?search=#{page}&button=&title=Special%3ASearch"
+	uri = URI.parse "#{BASE_WIKI_URL}api.php?action=opensearch&search=#{CGI.escape term}&limit=1&redirects=resolve&format=json"
 	response = fetch uri
-
-	title = get_title response
-	title.nil? ? "None found." : "\C-b#{title}\C-o - #{response.uri}"
+	json = JSON.parse! response.body
+	if json["1"].length > 0
+		get_title_message json["1"][0]
+	else
+		"Nothing found."
+	end
 end
 
-def get_title(response)
-	match = /<title>(.*?) - Netsoc Wiki<\/title>/.match response.body
-	unless match.nil? || (match[1].include? "Search results")
-		puts match
-		match[1]
-	else
-		searchMatch = response.body.match /'.*title="(.+?)"/
-		unless searchMatch.nil?
-			puts "Searching for #{searchMatch[1]}"
-			fetch_result(searchMatch[1])
-		else
-			nil
-		end
-	end
+def get_title_message(title)
+	"\C-b#{title}\C-o - #{BASE_WIKI_URL}index.php?title=#{CGI.escape title}"
 end
 
 def fetch(uri_str, limit = 10)
