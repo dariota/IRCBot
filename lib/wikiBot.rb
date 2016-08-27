@@ -1,10 +1,9 @@
 require "socket"
 require "set"
 require "./mediaFetch"
+require "./Logger"
 
 class WikiBot
-	attr_accessor :channel
-
 	def initialize(server, port, nick, password = nil)
 		@socket = TCPSocket.open(server, port || 6667)
 		@socket.puts "PASSWORD #{password}" if password
@@ -12,6 +11,7 @@ class WikiBot
 		@socket.puts "USER #{nick} #{nick} #{nick} :#{nick}"
 		@channels = Set.new
 		@hosts_idents = Hash.new
+		@logger = Logger.new
 		sleep 1
 		self
 	end
@@ -65,6 +65,8 @@ class WikiBot
 		message = senderData[6].chomp
 		return if type != "PRIVMSG"
 
+		@logger.log channel, nick, message
+
 		messageParts = message.split(" ")
 
 		case messageParts[0]
@@ -79,7 +81,7 @@ class WikiBot
 			return unless admin_authenticated(ident, host)
 			nick(messageParts[1])
 		when ".remember"
-			return
+			puts @logger.find(channel, messageParts[1], messageParts[2..-1].join(" ")) unless messageParts.length < 3
 		when ".quote"
 			return
 		when ".wiki"
