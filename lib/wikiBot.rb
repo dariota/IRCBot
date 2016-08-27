@@ -28,6 +28,10 @@ class WikiBot
 		@channels.add chanName
 	end
 
+	def nick(newNick = "dariobot")
+		@socket.puts"NICK #{newNick}"
+	end
+
 	def say(message, channel = nil)
 		if channel.nil?
 			raise ArgumentError unless @channels.length == 1
@@ -53,19 +57,22 @@ class WikiBot
 
 		return if senderData.nil?
 
-		user = senderData[1]
+		nick = senderData[1]
 		ident = senderData[2]
 		host = senderData[3]
 		type = senderData[4]
 		channel = senderData[5]
-		message = senderData[6]
+		message = senderData[6].chomp
 		return if type != "PRIVMSG"
 
-		puts message.split(" ")[0]
+		messageParts = message.split(" ")
 
-		case message.split(" ")[0]
+		case messageParts[0]
 		when ".quit"
-			quit "Received quit command from #{user}." if admin_authenticated(ident, host)
+			quit "Received quit command from #{nick}." if admin_authenticated(ident, host)
+		when ".nick"
+			return unless admin_authenticated(ident, host)
+			nick(messageParts[1])
 		when ".remember"
 			puts "remem"
 		when ".quote"
