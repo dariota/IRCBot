@@ -1,6 +1,6 @@
 require "socket"
 require "set"
-require "./mediaFetch"
+require "./MediaFetch"
 require "./Logger"
 
 class WikiBot
