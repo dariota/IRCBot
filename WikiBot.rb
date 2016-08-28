@@ -2,6 +2,9 @@ require "socket"
 require "set"
 require "./MediaFetch"
 require "./Logger"
+require "./IrcCommand"
+require "./AuthedCommand"
+require "./DotCommand"
 
 class WikiBot
 	def initialize(server, port, nick, password = nil)
@@ -9,9 +12,12 @@ class WikiBot
 		@socket.puts "PASSWORD #{password}" if password
 		@socket.puts "NICK #{nick}"
 		@socket.puts "USER #{nick} #{nick} #{nick} :#{nick}"
+
 		@channels = Set.new
 		@hosts_idents = Hash.new
 		@logger = Logger.new
+		@commands = Array.new
+
 		sleep 1
 		self
 	end
@@ -65,46 +71,22 @@ class WikiBot
 		message = senderData[6].chomp
 		return if type != "PRIVMSG"
 
-		@logger.log channel, nick, message
+		command = IrcCommand.new nick, ident, host, channel, message, self
+		log = true
 
-		messageParts = message.split(" ")
+		@commands.each { |x|
+			if x.match command
+				x.enact command
+				log = false
+			end
+		}
 
-		case messageParts[0]
-		when ".quit"
-			quit "Received quit command from #{nick}." if admin_authenticated(ident, host)
-		when ".join"
-			return unless admin_authenticated(ident, host)
-			joinChannel = messageParts[1]
-			join joinChannel
-			say "Joined on request of #{nick}.", joinChannel
-		when ".nick"
-			return unless admin_authenticated(ident, host)
-			nick(messageParts[1])
-		when ".remember"
-			if messageParts.length < 3
-				say ".remember <nick> <substring>", channel
-				return
-			end
-			if messageParts[1].casecmp(nick) == 0
-				say "You're really not that interesting, #{nick}.", channel
-				return
-			end
-			
-			remembered = @logger.find(channel, messageParts[1], messageParts[2..-1].join(" ")) unless messageParts.length < 3
-			puts "#{remembered.nick}: #{remembered.message}" unless remembered.nil?
-		when ".quote"
-			return
-		when ".wiki"
-			index = message.index(" ")
-			unless index.nil?
-				link = search message[index+1..-1]
-				say link, channel
-			else
-				say "#{nick}: Please provide a search term.", channel
-			end
-		when /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
-			puts "wiki"
-		end
+		@logger.log channel, nick, message if log
+
+		#when ".quote"
+		#	return
+		#when /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
+		#	puts "wiki"
 	end
 
 	def ping(message)
@@ -133,9 +115,15 @@ class WikiBot
 		idents.add ident
 	end
 
+	def add_command(command)
+		@commands.push command unless command.nil?
+	end
+
 end
 
 bot = WikiBot.new("irc.netsoc.tcd.ie", 6667, "dariobot")
 bot.say "Hey bud", "#dariotest"
 bot.add_admin("dario", "spoon.netsoc.tcd.ie")
+commands = [AuthedCommand.new(".join").extend(Join), AuthedCommand.new(".quit").extend(Quit), AuthedCommand.new(".nick").extend(Nick), DotCommand.new(".remember").extend(Remember), DotCommand.new(".wiki").extend(Wiki)]
+commands.each { |x| bot.add_command x }
 bot.get_messages
