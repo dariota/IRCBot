@@ -7,10 +7,12 @@ require "./AuthedCommand"
 require "./DotCommand"
 
 class WikiBot
+	attr_reader :logger
+
 	def initialize(server, port, nick, password = nil)
 		@socket = TCPSocket.open(server, port || 6667)
 		@socket.puts "PASSWORD #{password}" if password
-		@socket.puts "NICK #{nick}"
+		nick(nick)
 		@socket.puts "USER #{nick} #{nick} #{nick} :#{nick}"
 
 		@channels = Set.new
@@ -27,15 +29,19 @@ class WikiBot
 		@socket.gets until @socket.eof?
 	end
 
-	def join(chanName, password = nil)
-		channel = "#{chanName}"
+	def in_channel?(channel)
+		@channels.include? channel.downcase
+	end
+
+	def join(channel, password = nil)
+		return if in_channel? channel
 		@channel_password = password || ""
 		@socket.puts "JOIN #{channel} #{@channel_password}"
-		@channels.add chanName
+		@channels.add channel.downcase
 	end
 
 	def nick(newNick = "dariobot")
-		@socket.puts"NICK #{newNick}"
+		@socket.puts "NICK #{newNick}"
 	end
 
 	def say(message, channel = nil)

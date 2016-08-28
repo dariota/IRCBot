@@ -31,4 +31,7 @@ class Logger
 		@logs[channel.downcase].find { |m| m.nick_matches(nick) && m.message_contains(messagePart) }
 	end
 
+	def print
+		puts @logs
+	end
 end

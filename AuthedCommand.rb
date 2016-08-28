@@ -3,8 +3,10 @@ require "./DotCommand"
 class AuthedCommand < DotCommand
 
 	def match command
-		return command.bot.say("You're not authorised to do that.", command.channel) unless bot.admin_authenticated(command.ident, command.host)
-		super.match command
+		if super(command)
+			return command.bot.say("You're not authorised to do that.", command.channel) unless command.bot.admin_authenticated(command.ident, command.host)
+			true
+		end
 	end
 
 end
@@ -14,10 +16,10 @@ module Join
 	def enact command
 		parts = command.message.split(" ")
 		channel, password = parts[1], parts[2]
-		return if channel.nil?
+		return if channel.nil? || command.bot.in_channel?(channel)
 
 		command.bot.join parts[1], parts[2]
-		command.bot.say "Joined on request of #{nick}.", channel
+		command.bot.say "Joined on request of #{command.nick}.", channel
 	end
 
 end	
@@ -25,7 +27,7 @@ end
 module Quit
 
 	def enact command
-		command.bot.quit "Received quit command from #{nick}."
+		command.bot.quit "Received quit command from #{command.nick}."
 	end
 
 end

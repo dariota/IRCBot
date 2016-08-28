@@ -12,6 +12,6 @@ class Message
 	end
 
 	def message_contains(message)
-		!!(@message =~ Regexp.new(Regexp.escape(message)))
+		@message.downcase.include? message.downcase
 	end
 end
