@@ -55,9 +55,7 @@ class WikiBot
 		puts message
 		messageParts = message.split " "
 
-		if messageParts[0] == "PING"
-			return ping message
-		end
+		return ping message if messageParts[0] == "PING"
 
 		senderData = message.match /^:(.+?)!(.+?)@(.+?) (.+?) (.+?) :(.*)/
 
@@ -90,29 +88,23 @@ class WikiBot
 	end
 
 	def ping(message)
-		puts "got ping"
-		server = (message.split " ")
+		server = (message.split " ")[1]
 		@socket.puts "PONG #{server}"
 	end
 
 	def admin_authenticated(ident, host)
-		host.downcase!
-		ident.downcase!
-		idents = @hosts_idents[host]
-		!idents.nil? && idents.member?(ident)
+		idents = @hosts_idents[host.downcase]
+		!idents.nil? && idents.member?(ident.downcase)
 	end
 
 	def add_admin(ident, host)
-		ident.downcase!
-		host.downcase!
-
-		idents = @hosts_idents[host]
+		idents = @hosts_idents[host.downcase]
 		if idents.nil?
 			idents = Set.new
-			@hosts_idents[host] = idents
+			@hosts_idents[host.downcase] = idents
 		end
 
-		idents.add ident
+		idents.add ident.downcase
 	end
 
 	def add_command(command)
