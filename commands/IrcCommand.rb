@@ -1,5 +1,5 @@
 class IrcCommand
-	
+
 	attr_reader :nick, :ident, :host, :channel, :message, :bot
 
 	def initialize nick, ident, host, channel, message, bot

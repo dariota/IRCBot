@@ -1,4 +1,4 @@
-require "./Command"
+require "Command"
 
 class DotCommand < Command
 
@@ -24,7 +24,7 @@ module Remember
 			command.bot.say "You're really not that interesting, #{command.nick}.", command.channel
 			return
 		end
-		
+
 		remembered = command.bot.logger.find(command.channel, messageParts[1], messageParts[2..-1].join(" ")) unless messageParts.length < 3
 		unless remembered.nil?
 			command.bot.say "#{remembered.nick}: #{remembered.message}"

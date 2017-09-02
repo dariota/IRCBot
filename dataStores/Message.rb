@@ -1,4 +1,5 @@
 class Message
+
 	attr_reader :nick
 	attr_reader :message
 
@@ -14,4 +15,5 @@ class Message
 	def message_contains(message)
 		@message.downcase.include? message.downcase
 	end
+
 end

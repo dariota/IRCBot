@@ -1,10 +1,12 @@
-require "./DotCommand"
+require "DotCommand"
 
 class AuthedCommand < DotCommand
 
 	def match command
 		if super(command)
-			return command.bot.say("You're not authorised to do that.", command.channel) unless command.bot.admin_authenticated(command.ident, command.host)
+			unless command.bot.admin_authenticated(command.ident, command.host)
+				return command.bot.say("You're not authorised to do that.", command.channel) 
+			end
 			true
 		end
 	end

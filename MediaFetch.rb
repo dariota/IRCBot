@@ -1,6 +1,6 @@
-require 'net/http'
 require 'cgi'
 require 'json'
+require 'net/http'
 
 BASE_WIKI_URL = "https://wiki.netsoc.tcd.ie/"
 
@@ -13,13 +13,6 @@ def search(term)
 	else
 		"Nothing found."
 	end
-end
-
-def get_title_message(title)
-	url = "#{BASE_WIKI_URL}index.php?title=#{CGI.escape title}"
-	summary = fetch("#{url}&action=raw").body.match /^([A-Za-z]+.*)/
-	summary = "#{summary[1][0, 101]}(…)" if not summary.nil?
-	"\C-b#{title}\C-o#{summary.nil? ? "" : " - "} #{summary.nil? ? "" : summary} - #{url}"
 end
 
 def fetch(uri_str, limit = 10)
@@ -36,4 +29,10 @@ def fetch(uri_str, limit = 10)
 	else
 		response.value
 	end
+end
+
+def get_title_message(title)
+	url = "#{BASE_WIKI_URL}index.php?title=#{CGI.escape title}"
+	summary = fetch("#{url}&action=raw").body.match /^([A-Za-z]+.*)/
+	"\C-b#{title}\C-o#{summary.nil? ? "" : " - "} #{summary.nil? ? "" : summary[1].sub(/(?:\b.{1,3})?$/, "(…)")} - #{url}"
 end

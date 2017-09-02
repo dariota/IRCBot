@@ -1,5 +1,5 @@
-require "./RingBuffer"
-require "./Message"
+require "Message"
+require "RingBuffer"
 
 LOG_LENGTH = 100
 
@@ -14,8 +14,12 @@ class Logger
 		@logs[channel.downcase] = RingBuffer.new LOG_LENGTH unless channel.nil?
 	end
 
+	def has_channel?(channel)
+		@logs[channel.downcase].nil?
+	end
+
 	def log(channel, nick, message)
-		if @logs[channel.downcase].nil?
+		if !has_channel? channel
 			add_channel channel
 		end
 
@@ -34,4 +38,5 @@ class Logger
 	def print
 		puts @logs
 	end
+
 end

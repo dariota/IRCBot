@@ -1,12 +1,9 @@
-require "socket"
+require "MediaFetch"
 require "set"
-require "./MediaFetch"
-require "./Logger"
-require "./IrcCommand"
-require "./AuthedCommand"
-require "./DotCommand"
+require "socket"
 
 class WikiBot
+
 	attr_reader :logger
 
 	def initialize(server, port, nick, password = nil)
@@ -24,13 +21,13 @@ class WikiBot
 		self
 	end
 
+	def in_channel?(channel)
+		@channels.include? channel.downcase
+	end
+
 	def quit(reason = nil)
 		@socket.puts "QUIT :#{reason or ''}"
 		@socket.gets until @socket.eof?
-	end
-
-	def in_channel?(channel)
-		@channels.include? channel.downcase
 	end
 
 	def join(channel, password = nil)
@@ -42,6 +39,11 @@ class WikiBot
 
 	def nick(newNick = "dariobot")
 		@socket.puts "NICK #{newNick}"
+	end
+
+	def ping(message)
+		server = (message.split " ")[1]
+		@socket.puts "PONG #{server}"
 	end
 
 	def say(message, channel = nil)
@@ -91,11 +93,6 @@ class WikiBot
 		#	return
 		#when /https?:\/\/wiki.netsoc.(?:tcd.)?ie/
 		#	puts "wiki"
-	end
-
-	def ping(message)
-		server = (message.split " ")[1]
-		@socket.puts "PONG #{server}"
 	end
 
 	def admin_authenticated(ident, host)

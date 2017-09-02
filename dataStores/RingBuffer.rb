@@ -1,4 +1,5 @@
 class RingBuffer < Array
+
 	attr_reader :max_size
 
 	def initialize(max_size, enum = nil)
@@ -34,4 +35,5 @@ class RingBuffer < Array
 	end
 
 	alias :push :<<
+
 end
